@@ -6,16 +6,23 @@ module.exports = (io) => {
       console.log("disconnected");
     });
 
+    socket.on("create-lobby", (roomId, userId) => {
+      socket.join(roomId);
+      console.log("Lobby created " + roomId + " By user: " + userId);
+    });
+
+    socket.on("join-lobby", (roomId, userId) => {
+      socket.join(roomId);
+      socket.to(roomId).emit("user-connected", userId);
+    });
+
     socket.on("start", (data) => {
-      console.log(data.y);
       socket.broadcast.emit("start", data);
     });
     socket.on("draw", (data) => {
-      console.log(data.y);
       socket.broadcast.emit("draw", data);
     });
     socket.on("end", () => {
-      console.log("end");
       socket.broadcast.emit("end");
     });
   });
