@@ -6,14 +6,25 @@ module.exports = (io) => {
       console.log("disconnected");
     });
 
-    socket.on("create-lobby", (roomId, userId) => {
+    socket.on("create-lobby", (roomId, user) => {
+      let rooms = Array.from(io.of("/").adapter.rooms.keys());
+      if (rooms.includes(roomId)) {
+        socket.emit("failed-create");
+        return;
+      }
       socket.join(roomId);
-      console.log("Lobby created " + roomId + " By user: " + userId);
+      socket.emit("lobby-created");
     });
 
-    socket.on("join-lobby", (roomId, userId) => {
+    socket.on("join-lobby", (roomId, user) => {
+      let rooms = Array.from(io.of("/").adapter.rooms.keys());
+      if (!rooms.includes(roomId)) {
+        socket.emit("failed-join", roomId);
+        return;
+      }
       socket.join(roomId);
-      socket.to(roomId).emit("user-connected", userId);
+      socket.to(roomId).emit("user-connected", user.nickname);
+      socket.emit("lobby-joined");
     });
 
     socket.on("start", (data) => {
