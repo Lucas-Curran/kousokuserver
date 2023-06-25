@@ -1,10 +1,14 @@
+require("dotenv").config();
 var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const routes = require("./routes/routes");
+const mongoose = require("mongoose");
+const mongoString = process.env.DATABASE_URL;
 
-var indexRouter = require("./routes/index");
+var indexRouter = require("./routes/routes.js");
 
 var app = express();
 
@@ -21,6 +25,21 @@ require("./socket")(io); //<------
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
+
+// routes
+app.use("/api", routes);
+
+// setup database
+mongoose.connect(mongoString);
+const database = mongoose.connection;
+
+database.on("error", (error) => {
+  console.log(error);
+});
+
+database.once("connected", () => {
+  console.log("Database Connected");
+});
 
 app.use(logger("dev"));
 app.use(express.json());
